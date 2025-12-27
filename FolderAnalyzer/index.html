@@ -15,49 +15,119 @@
             display: flex; flex-direction: column;
         }
 
-        /* --- HEADER STYLES (DIPERBARUI) --- */
+        /* --- FITUR DEVELOPER BADGE (BARU) --- */
+        .dev-wrapper {
+            position: fixed; /* Tetap di pojok walau discroll */
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .dev-btn {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .dev-btn:hover {
+            background-color: #34495e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .dev-content {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: 120%; /* Muncul di bawah tombol */
+            left: 0;
+            background: white;
+            min-width: 220px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-left: 5px solid #3498db;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        /* Efek Hover: Tampilkan konten */
+        .dev-wrapper:hover .dev-content {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .dev-content h4 {
+            margin: 0 0 10px 0;
+            color: #7f8c8d;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .dev-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .dev-list li {
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .dev-list li::before {
+            content: "•";
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        /* --- HEADER STYLES --- */
         .header-container {
             margin-bottom: 25px;
             text-align: center;
+            padding-top: 10px; /* Sedikit jarak karena ada tombol dev */
         }
 
-        h1 { 
-            margin: 0; 
-            color: #2c3e50; 
-            font-size: 28px; 
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        h2 { 
-            margin: 5px 0 0 0; /* Jarak atas 5px, bawah 0 */
-            color: #7f8c8d;    /* Warna abu-abu agar tidak dominan */
-            font-size: 16px;   /* Ukuran lebih kecil */
-            font-weight: 400;  /* Font normal (tidak bold) */
-        }
+        h1 { margin: 0; color: #2c3e50; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+        h2 { margin: 5px 0 0 0; color: #7f8c8d; font-size: 16px; font-weight: 400; }
 
         /* --- GRID UTAMA --- */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 360px 1fr;
             gap: 20px;
-            height: 100%;
-            overflow: hidden;
+            height: 100%; overflow: hidden;
         }
 
         /* --- PANEL KIRI --- */
         .panel-left {
             background: white; padding: 25px; border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column;
-            overflow-y: auto;
+            display: flex; flex-direction: column; overflow-y: auto;
         }
         
         .form-group label { font-weight: bold; display: block; margin-bottom: 8px; color: #34495e; }
         .form-group input, .form-group select {
             width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;
-            box-sizing: border-box; font-size: 14px; margin-bottom: 10px;
-            background: #fff;
+            box-sizing: border-box; font-size: 14px; margin-bottom: 10px; background: #fff;
         }
         button {
             width: 100%; background-color: #3498db; color: white; padding: 12px;
@@ -66,45 +136,25 @@
         }
         button:hover { background-color: #2980b9; }
 
-        /* --- INFO BOX --- */
         .info-box {
-            font-size: 13px;
-            color: #555;
-            background-color: #f8f9fa;
-            padding: 12px;
-            border-radius: 6px;
-            border-left: 4px solid #f1c40f;
-            margin-bottom: 20px;
-            line-height: 1.5;
-            display: none;
+            font-size: 13px; color: #555; background-color: #f8f9fa;
+            padding: 12px; border-radius: 6px; border-left: 4px solid #f1c40f;
+            margin-bottom: 20px; line-height: 1.5; display: none;
         }
 
-        .stats-container {
-            margin-top: 20px; display: flex; gap: 10px;
-        }
-        .stat-box {
-            flex: 1; padding: 15px; border-radius: 8px; text-align: center;
-        }
-
-        .summary-box {
-            margin-top: 20px; padding: 20px; background-color: #ecf0f1;
-            border-radius: 8px; border-left: 5px solid #2ecc71;
-            font-size: 14px; line-height: 1.6;
-        }
+        .stats-container { margin-top: 20px; display: flex; gap: 10px; }
+        .stat-box { flex: 1; padding: 15px; border-radius: 8px; text-align: center; }
+        .summary-box { margin-top: 20px; padding: 20px; background-color: #ecf0f1; border-radius: 8px; border-left: 5px solid #2ecc71; font-size: 14px; line-height: 1.6; }
 
         /* --- PANEL KANAN --- */
         .panel-right {
-            display: grid; grid-template-rows: 55% 45%;
-            gap: 20px;
-            height: 100%; overflow: hidden;
+            display: grid; grid-template-rows: 55% 45%; gap: 20px; height: 100%; overflow: hidden;
         }
 
         .card {
             background: white; border-radius: 12px; padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden;
         }
-
         .card h3 { margin-top: 0; color: #7f8c8d; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 
         .chart-wrapper { flex-grow: 1; position: relative; width: 100%; }
@@ -118,6 +168,19 @@
 </head>
 <body>
 
+    <div class="dev-wrapper">
+        <div class="dev-btn">
+            <span>👨‍💻</span> Dev Team
+        </div>
+        <div class="dev-content">
+            <h4>Created By: Kelompok 8</h4>
+            <ul class="dev-list">
+                <li><b>Erastus Liubeta Septian</b></li>
+                <li><b>Duarte Sebastian Napitupulu</b></li>
+                <li><b>Galang Herjuno Mulya</b></li>
+            </ul>
+        </div>
+    </div>
     <div class="header-container">
         <h1>📂 Folder Analyzer</h1>
         <h2>Analisis Efisiensi Perhitungan Ukuran Direktori (Folder) pada Struktur Data Hirarkis</h2>
@@ -144,8 +207,7 @@
                     </select>
                 </div>
 
-                <div id="infoBox" class="info-box">
-                    </div>
+                <div id="infoBox" class="info-box"></div>
 
                 <button type="submit">🚀 Jalankan Analisis</button>
             </form>
@@ -207,7 +269,6 @@
     </div>
 
     <script>
-        // Info Skenario
         const scenarioInfo = {
             'default': "<b>Skenario Worst-Case (Linear Deep):</b><br>Membuat struktur di mana setiap folder hanya memiliki 1 file dan 1 sub-folder di dalamnya secara terus menerus.<br><br><i>Tujuan:</i> Menguji batas memori (Stack Overflow) pada algoritma Rekursif akibat kedalaman tumpukan yang ekstrem.",
             'random': "<b>Skenario Average-Case (Random Tree):</b><br>Membuat struktur pohon acak dengan probabilitas 70% File dan 30% Folder.<br><br><i>Tujuan:</i> Mensimulasikan kondisi sistem file nyata pada umumnya."
@@ -216,13 +277,14 @@
         function updateInfo() {
             const select = document.getElementById('scenarioSelect');
             const infoBox = document.getElementById('infoBox');
-            const val = select.value;
-
-            if (scenarioInfo[val]) {
-                infoBox.style.display = 'block';
-                infoBox.innerHTML = scenarioInfo[val];
-            } else {
-                infoBox.style.display = 'none';
+            if(select && infoBox) { // Cek null safety
+                const val = select.value;
+                if (scenarioInfo[val]) {
+                    infoBox.style.display = 'block';
+                    infoBox.innerHTML = scenarioInfo[val];
+                } else {
+                    infoBox.style.display = 'none';
+                }
             }
         }
         window.onload = updateInfo;
