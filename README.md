@@ -10,6 +10,16 @@ Analisis Efisiensi Perhitungan Ukuran Direktori (Folder) pada Struktur Data Hira
 1.  **Pendekatan Rekursif:** Menggunakan fungsi yang memanggil dirinya sendiri (standar DFS).
 2.  **Pendekatan Iteratif:** Menggunakan manajemen *Stack* manual.
 
+<h3 align="center">
+  Baik algoritma Rekursif maupun Iteratif memiliki kompleksitas waktu yang sama, yaitu: 
+</h3> 
+<h1 align="center">  
+    O(N) 
+    <br>
+    <br>
+</h1>
+<br>
+
 Aplikasi ini membangkitkan data dummy dengan dua mode skenario yaitu 
 1.  **Skenario Default (Worst-Case / Linear Deep Structure):**
     Mode ini dirancang untuk menciptakan kondisi ekstrem guna menguji ketahanan memori (memory safety) dari algoritma.
@@ -61,8 +71,7 @@ Aplikasi ini membangkitkan data dummy dengan dua mode skenario yaitu
 
 ---
 
-## 🧠 Analisis Algoritma
-
+## 🧠 Analisis Algoritma 
 Aplikasi ini membandingkan dua pendekatan traversal pohon:
 
 ### 1. Rekursif (Recursive)
