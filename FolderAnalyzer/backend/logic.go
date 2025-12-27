@@ -12,7 +12,7 @@ func GenerateDummyStructure(totalItems int, mode string) (*FileSystemNode, int, 
 	root := NewNode("Root", true, 0)
 	
 	countFiles := 0
-	countFolders := 0 
+	countFolders := 1 // Folder Root sudah dihitung 
 
 	if mode == "random" {
 		// SKENARIO RANDOM (30% Folder : 70% File)
@@ -42,24 +42,27 @@ func GenerateDummyStructure(totalItems int, mode string) (*FileSystemNode, int, 
 		// Ini akan membuat Linked List vertikal yang sangat dalam.
 		
 		current := root
-		
-		for i := 0; i < totalItems; i++ {
-			// 1. Buat Folder Baru
-			folderName := "Folder_" + strconv.Itoa(i)
-			newFolder := NewNode(folderName, true, 0)
-			
-			current.AddChild(newFolder)
-			countFolders++
+    i := 0
+    for i < totalItems {
+        // 1. Buat Folder Baru
+        folderName := "Folder_" + strconv.Itoa(countFolders)
+        newFolder := NewNode(folderName, true, 0)
+        current.AddChild(newFolder)
+        countFolders++
+        i++ // Node bertambah
 
-			// 2. Buat 1 File di dalamnya
-			size := int64(rand.Intn(100000) + 1024)
-			file := NewNode("File_"+strconv.Itoa(i), false, size)
-			
-			newFolder.AddChild(file)
-			countFiles++
+        // Cek jika kuota N masih ada untuk File
+        if i < totalItems {
+            // 2. Buat 1 File di dalamnya
+            size := int64(rand.Intn(100000) + 1024)
+            file := NewNode("File_"+strconv.Itoa(countFiles), false, size)
+            newFolder.AddChild(file)
+            countFiles++
+            i++ // Node bertambah
+        }
 
-			// 3. Masuk ke dalam folder baru (Deepening)
-			current = newFolder
+        // 3. Masuk ke dalam folder baru
+        current = newFolder
 		}
 	}
 
