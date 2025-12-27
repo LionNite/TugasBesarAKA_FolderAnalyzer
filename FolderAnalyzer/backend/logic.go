@@ -6,34 +6,52 @@ import (
 	"time"
 )
 
-// GenerateDummyStructure membuat struktur folder acak
-func GenerateDummyStructure(totalItems int) *FileSystemNode {
+// GenerateDummyStructure: Versi Random Tree (Natural)
+// Mengembalikan 3 nilai: Root Node, Jumlah File, Jumlah Folder
+func GenerateDummyStructure(totalItems int) (*FileSystemNode, int, int) {
 	rand.Seed(time.Now().UnixNano())
+	
+	// Root Node
 	root := NewNode("Root", true, 0)
+	
+	// Slice untuk menampung folder yang tersedia sebagai induk
 	availableFolders := []*FileSystemNode{root}
 
+	countFiles := 0
+	countFolders := 1 // Root dihitung 1 folder
+
 	for i := 0; i < totalItems; i++ {
-		// Pilih folder induk acak
+		// Pilih induk secara acak (Membuat struktur pohon yang lebar/alami)
 		parentIdx := rand.Intn(len(availableFolders))
 		parent := availableFolders[parentIdx]
 
-		// 70% File, 30% Folder
+		// Logika Probabilitas: 70% File, 30% Folder
 		if rand.Float32() > 0.3 {
-			// Buat File (Size 1KB - 100KB)
+			// --- BUAT FILE (70%) ---
+			// Ukuran acak antara 1KB - 100KB
 			size := int64(rand.Intn(100000) + 1024)
-			file := NewNode("File_"+strconv.Itoa(i), false, size)
+			name := "File_" + strconv.Itoa(i)
+			file := NewNode(name, false, size)
+			
 			parent.AddChild(file)
+			countFiles++
 		} else {
-			// Buat Folder
-			folder := NewNode("Folder_"+strconv.Itoa(i), true, 0)
+			// --- BUAT FOLDER (30%) ---
+			name := "Folder_" + strconv.Itoa(i)
+			folder := NewNode(name, true, 0)
+			
 			parent.AddChild(folder)
+			
+			// Masukkan folder baru ke daftar 'availableFolders' agar bisa dipilih jadi induk nanti
 			availableFolders = append(availableFolders, folder)
+			countFolders++
 		}
 	}
-	return root
+
+	return root, countFiles, countFolders
 }
 
-// HitungRekursif: Menghitung ukuran menggunakan fungsi rekursif
+// HitungRekursif: Menghitung total size menggunakan metode Rekursif
 func HitungRekursif(node *FileSystemNode) int64 {
 	if !node.IsFolder {
 		return node.Size
@@ -46,26 +64,23 @@ func HitungRekursif(node *FileSystemNode) int64 {
 	return total
 }
 
-// HitungIteratif: Menghitung ukuran menggunakan Stack (Manual)
+// HitungIteratif: Menghitung total size menggunakan metode Iteratif
 func HitungIteratif(root *FileSystemNode) int64 {
 	if !root.IsFolder {
 		return root.Size
 	}
 
 	var totalSize int64 = 0
-	// Stack inisialisasi
 	stack := []*FileSystemNode{root}
 
 	for len(stack) > 0 {
-		// Pop item terakhir (LIFO - Last In First Out)
 		index := len(stack) - 1
 		current := stack[index]
-		stack = stack[:index] // Hapus dari stack
+		stack = stack[:index] 
 
 		if !current.IsFolder {
 			totalSize += current.Size
 		} else {
-			// Push semua anak ke stack
 			stack = append(stack, current.Children...)
 		}
 	}

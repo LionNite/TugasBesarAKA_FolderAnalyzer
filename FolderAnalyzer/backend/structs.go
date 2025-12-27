@@ -1,7 +1,6 @@
 package backend
 
 // FileSystemNode merepresentasikan node dalam tree (bisa file atau folder)
-// Huruf besar di awal (Exported) agar bisa dibaca oleh main.go
 type FileSystemNode struct {
 	Name     string
 	IsFolder bool

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analisis Algoritma</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* --- RESET & LAYOUT DASAR --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0; padding: 20px;
+            height: 100vh; box-sizing: border-box;
+            display: flex; flex-direction: column;
+        }
+
+        h1 { margin: 0 0 20px 0; color: #2c3e50; font-size: 24px; text-align: center; }
+
+        /* --- GRID UTAMA --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 360px 1fr; /* Kiri 360px, Kanan sisa layar */
+            gap: 20px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* --- PANEL KIRI --- */
+        .panel-left {
+            background: white; padding: 25px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
+            overflow-y: auto; /* Scroll jika konten terlalu panjang */
+        }
+        
+        .form-group label { font-weight: bold; display: block; margin-bottom: 8px; color: #34495e; }
+        .form-group input {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;
+            box-sizing: border-box; font-size: 16px; margin-bottom: 15px;
+        }
+        button {
+            width: 100%; background-color: #3498db; color: white; padding: 12px;
+            border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold;
+            transition: 0.3s;
+        }
+        button:hover { background-color: #2980b9; }
+
+        .stats-container {
+            margin-top: 20px; display: flex; gap: 10px;
+        }
+        .stat-box {
+            flex: 1; padding: 15px; border-radius: 8px; text-align: center;
+        }
+
+        .summary-box {
+            margin-top: 20px; padding: 20px; background-color: #ecf0f1;
+            border-radius: 8px; border-left: 5px solid #2ecc71;
+            font-size: 14px; line-height: 1.6;
+        }
+
+        /* --- PANEL KANAN --- */
+        .panel-right {
+            display: grid; grid-template-rows: 55% 45%; /* Grafik lebih tinggi sedikit */
+            gap: 20px;
+            height: 100%; overflow: hidden;
+        }
+
+        .card {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .card h3 { margin-top: 0; color: #7f8c8d; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+        .chart-wrapper { flex-grow: 1; position: relative; width: 100%; }
+        .table-wrapper { flex-grow: 1; overflow-y: auto; }
+        
+        /* Tabel Style */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; position: sticky; top: 0; color: #555; z-index: 10; }
+        tr:hover { background-color: #f1f1f1; }
+    </style>
+</head>
+<body>
+
+    <h1>📂 Dashboard Analisis Kompleksitas Algoritma</h1>
+
+    <div class="dashboard-grid">
+        <div class="panel-left">
+            <h3>⚙️ Konfigurasi</h3>
+            <form method="POST">
+                <div class="form-group">
+                    <label>Jumlah Data (N):</label>
+                    <input type="number" name="inputN" value="{{.InputN}}" placeholder="Contoh: 10000" required>
+                </div>
+                <button type="submit">🚀 Jalankan Analisis</button>
+            </form>
+
+            {{if .IsProcessed}}
+            <div class="stats-container">
+                <div class="stat-box" style="background: #e8f6f3; border: 1px solid #d4efdf;">
+                    <div style="font-size: 24px;">📂</div>
+                    <strong style="color: #1d8348; display: block; font-size: 18px;">{{.TotalFolders}}</strong>
+                    <span style="font-size: 12px; color: #555;">Folders</span>
+                </div>
+                <div class="stat-box" style="background: #eaf2f8; border: 1px solid #d4e6f1;">
+                    <div style="font-size: 24px;">📄</div>
+                    <strong style="color: #2874a6; display: block; font-size: 18px;">{{.TotalFiles}}</strong>
+                    <span style="font-size: 12px; color: #555;">Files</span>
+                </div>
+            </div>
+
+            <div class="summary-box">
+                {{.Result}}
+            </div>
+            {{end}}
+        </div>
+
+        <div class="panel-right">
+            <div class="card">
+                <h3>📈 Grafik Kenaikan Waktu (Microseconds)</h3>
+                {{if .IsProcessed}}
+                <div class="chart-wrapper">
+                    <canvas id="myChart"></canvas>
+                </div>
+                {{else}}
+                <p style="text-align:center; margin-top:50px; color:#aaa;">Silakan masukkan N dan klik tombol untuk melihat grafik.</p>
+                {{end}}
+            </div>
+
+            <div class="card">
+                <h3>📋 Detail Per Checkpoint</h3>
+                <div class="table-wrapper">
+                    {{if .IsProcessed}}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Jumlah Data (N)</th>
+                                <th>Rekursif (µs)</th>
+                                <th>Iteratif (µs)</th>
+                                <th>Tercepat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                    {{else}}
+                    <p style="text-align:center; margin-top:20px; color:#aaa;">Data tabel belum tersedia.</p>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{if .IsProcessed}}
+    <script>
+        // 1. Ambil Data JSON dari Go
+        const labels = JSON.parse('{{.ChartLabels}}');
+        const dataRec = JSON.parse('{{.ChartDataRec}}');
+        const dataIter = JSON.parse('{{.ChartDataIter}}');
+
+        // 2. Render Grafik Chart.js
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Rekursif',
+                        data: dataRec,
+                        borderColor: '#e74c3c', // Merah
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        tension: 0.3, fill: true, pointRadius: 3
+                    },
+                    {
+                        label: 'Iteratif',
+                        data: dataIter,
+                        borderColor: '#3498db', // Biru
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.3, fill: true, pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: { 
+                        title: { display: true, text: 'Input Size (N)' }, 
+                        grid: { display: false } 
+                    },
+                    y: { 
+                        title: { display: true, text: 'Waktu (Microseconds)' },
+                        beginAtZero: true,
+                        // Tampilkan desimal di sumbu Y
+                        ticks: { 
+                            callback: function(val) { return val.toFixed(4) + ' µs'; } 
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            // Tooltip presisi tinggi (6 desimal)
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw.toFixed(6) + ' µs';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 3. Render Tabel Detail
+        const tableBody = document.getElementById('tableBody');
+        let htmlRows = '';
+        
+        for (let i = 0; i < labels.length; i++) {
+            const nVal = labels[i];
+            const rVal = dataRec[i];
+            const iVal = dataIter[i];
+
+            // Format angka 6 desimal agar tidak 0.000
+            const rDisplay = rVal.toFixed(6);
+            const iDisplay = iVal.toFixed(6);
+
+            // Logika Pemenang
+            let winner = '';
+            let winnerStyle = '';
+
+            if (rVal < iVal) {
+                winner = 'Rekursif';
+                winnerStyle = 'color: #e74c3c; font-weight: bold;'; // Merah
+            } else if (iVal < rVal) {
+                winner = 'Iteratif';
+                winnerStyle = 'color: #3498db; font-weight: bold;'; // Biru
+            } else {
+                winner = 'Setara';
+                winnerStyle = 'color: gray; font-style: italic;';
+            }
+
+            htmlRows += `
+                <tr>
+                    <td>${i+1}</td>
+                    <td><b>${nVal.toLocaleString()}</b></td>
+                    <td>${rDisplay}</td>
+                    <td>${iDisplay}</td>
+                    <td style="${winnerStyle}">🏆 ${winner}</td>
+                </tr>
+            `;
+        }
+        tableBody.innerHTML = htmlRows;
+    </script>
+    {{end}}
+
+</body>
+</html>
