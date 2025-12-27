@@ -5,9 +5,9 @@ type FileSystemNode struct {
 	IsFolder    bool
 	Size        int64
 	
-	// MULTI LINKED LIST POINTERS:
-	FirstChild  *FileSystemNode // Pointer ke anak paling kiri (isi folder)
-	NextSibling *FileSystemNode // Pointer ke saudara di sebelah kanan
+	// MULTI LINKED LIST (First Child - Next Sibling)
+	FirstChild  *FileSystemNode 
+	NextSibling *FileSystemNode 
 }
 
 func NewNode(name string, isFolder bool, size int64) *FileSystemNode {
@@ -20,18 +20,18 @@ func NewNode(name string, isFolder bool, size int64) *FileSystemNode {
 	}
 }
 
-// AddChild Linked List
-// Menyambungkan node baru ke ujung rantai sibling
+// AddChild
+// Menambahkan anak ke ujung antrean Sibling
 func (n *FileSystemNode) AddChild(newChild *FileSystemNode) {
 	if !n.IsFolder {
 		return
 	}
 
-	// Jika belum punya anak, jadikan anak pertama
 	if n.FirstChild == nil {
+		// Jika belum punya anak, jadikan anak pertama
 		n.FirstChild = newChild
 	} else {
-		// Jika sudah punya anak, telusuri (traverse) sampai anak terakhir (sibling paling ujung)
+		// Jika sudah punya, cari saudara terakhir (traverse sibling)
 		current := n.FirstChild
 		for current.NextSibling != nil {
 			current = current.NextSibling

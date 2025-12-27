@@ -6,38 +6,63 @@ import (
 	"time"
 )
 
-// GenerateDummyStructure: Logika sama, tapi fungsi AddChild di struct sudah berubah
-func GenerateDummyStructure(totalItems int) (*FileSystemNode, int, int) {
+// GenerateDummyStructure: Multi Linked List + Mode Pilihan
+func GenerateDummyStructure(totalItems int, mode string) (*FileSystemNode, int, int) {
 	rand.Seed(time.Now().UnixNano())
 	root := NewNode("Root", true, 0)
 	
-	// Kita butuh cara untuk menyimpan daftar folder agar bisa dipilih acak.
-	// Karena Linked List susah diakses acak (harus traverse), 
-	// kita BANTU dengan slice sementara hanya untuk proses pembuatan dummy ini.
-	availableFolders := []*FileSystemNode{root}
-
 	countFiles := 0
-	countFolders := 1
+	countFolders := 0 
 
-	for i := 0; i < totalItems; i++ {
-		parentIdx := rand.Intn(len(availableFolders))
-		parent := availableFolders[parentIdx]
+	if mode == "random" {
+		// SKENARIO RANDOM (30% Folder : 70% File)
+		// Buat slice bantu untuk memilih parent secara acak
+		availableFolders := []*FileSystemNode{root}
+		
+		for i := 0; i < totalItems; i++ {
+			parentIdx := rand.Intn(len(availableFolders))
+			parent := availableFolders[parentIdx]
 
-		if rand.Float32() > 0.3 {
-			// Buat File
+			if rand.Float32() > 0.3 { // 70% File
+				size := int64(rand.Intn(100000) + 1024)
+				file := NewNode("File_"+strconv.Itoa(i), false, size)
+				parent.AddChild(file) // Menggunakan AddChild Linked List
+				countFiles++
+			} else { // 30% Folder
+				folder := NewNode("Folder_"+strconv.Itoa(i), true, 0)
+				parent.AddChild(folder)
+				
+				availableFolders = append(availableFolders, folder)
+				countFolders++
+			}
+		}
+
+	} else {
+		// SKENARIO DEFAULT (1 Folder = 1 File, Deep Structure)
+		// Ini akan membuat Linked List vertikal yang sangat dalam.
+		
+		current := root
+		
+		for i := 0; i < totalItems; i++ {
+			// 1. Buat Folder Baru
+			folderName := "Folder_" + strconv.Itoa(i)
+			newFolder := NewNode(folderName, true, 0)
+			
+			current.AddChild(newFolder)
+			countFolders++
+
+			// 2. Buat 1 File di dalamnya
 			size := int64(rand.Intn(100000) + 1024)
 			file := NewNode("File_"+strconv.Itoa(i), false, size)
-			parent.AddChild(file)
-			countFiles++
-		} else {
-			// Buat Folder
-			folder := NewNode("Folder_"+strconv.Itoa(i), true, 0)
-			parent.AddChild(folder)
 			
-			availableFolders = append(availableFolders, folder)
-			countFolders++
+			newFolder.AddChild(file)
+			countFiles++
+
+			// 3. Masuk ke dalam folder baru (Deepening)
+			current = newFolder
 		}
 	}
+
 	return root, countFiles, countFolders
 }
 
@@ -49,12 +74,11 @@ func HitungRekursif(node *FileSystemNode) int64 {
 
 	var total int64 = 0
 	
-	// Loop menelusuri Linked List Sibling
-	// Mulai dari anak pertama, geser ke kanan terus sampai nil
+	// Loop menelusuri Sibling (Kanan)
 	child := node.FirstChild
 	for child != nil {
 		total += HitungRekursif(child)
-		child = child.NextSibling // Geser ke saudara berikutnya
+		child = child.NextSibling
 	}
 	
 	return total
@@ -70,54 +94,26 @@ func HitungIteratif(root *FileSystemNode) int64 {
 	stack := []*FileSystemNode{root}
 
 	for len(stack) > 0 {
+		// Pop Stack
 		index := len(stack) - 1
 		current := stack[index]
 		stack = stack[:index]
 
-		// Proses node saat ini
 		if !current.IsFolder {
 			totalSize += current.Size
 		}
 
 		// LOGIKA STACK UNTUK LINKED LIST:
-		// Jika punya anak, masukkan anak pertama ke Stack.
-		// Nanti anak pertama akan menarik saudara-saudaranya (NextSibling) 
-		// ATAU kita masukkan semua sibling ke stack sekarang juga?
-		
-		// Cara Paling Aman: Masukkan anak pertama saja ke Stack?
-		// TAPI tunggu, jika kita hanya push FirstChild, bagaimana NextSibling diproses?
-		
-		// Strategi Iteratif yang benar untuk First Child/Next Sibling:
-		// 1. Proses Current
-		// 2. Jika punya NextSibling, Push ke Stack (agar diproses nanti)
-		// 3. Jika punya FirstChild, Push ke Stack (agar diproses duluan/DFS)
-		
+		// Agar urutannya benar (Depth First), kita harus push NextSibling dulu, baru FirstChild.
+
+		// 1. Push Saudara (NextSibling) agar diproses nanti setelah anak-anak selesai
+		if current.NextSibling != nil {
+			stack = append(stack, current.NextSibling)
+		}
+
+		// 2. Push Anak Pertama (FirstChild) agar diproses SEGERA (masuk ke dalam folder)
 		if current.FirstChild != nil {
 			stack = append(stack, current.FirstChild)
-		}
-		
-		// PERHATIAN:
-		// Struktur data kita mencampur File dan Folder sebagai Node.
-		// Jika 'current' adalah Folder, dia punya FirstChild.
-		// TAPI 'current' sendiri mungkin adalah FirstChild dari bapaknya, 
-		// jadi dia punya NextSibling.
-		
-		// KOREKSI LOGIKA ITERATIF:
-		// Di looping awal (stack root), root tidak punya sibling.
-		// Tapi anak-anaknya punya sibling.
-		
-		// Mari kita ubah strateginya:
-		// Stack berisi Node yang perlu "dijelajahi".
-		// Saat kita pop Folder, kita iterasi semua children-nya MANUAL menggunakan linked list,
-		// lalu push ke stack.
-		
-		if current.IsFolder {
-			child := current.FirstChild
-			for child != nil {
-				// Push semua anak ke stack
-				stack = append(stack, child)
-				child = child.NextSibling
-			}
 		}
 	}
 	return totalSize

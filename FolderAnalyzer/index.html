@@ -15,12 +15,31 @@
             display: flex; flex-direction: column;
         }
 
-        h1 { margin: 0 0 20px 0; color: #2c3e50; font-size: 24px; text-align: center; }
+        /* --- HEADER STYLES (DIPERBARUI) --- */
+        .header-container {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        h1 { 
+            margin: 0; 
+            color: #2c3e50; 
+            font-size: 28px; 
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        h2 { 
+            margin: 5px 0 0 0; /* Jarak atas 5px, bawah 0 */
+            color: #7f8c8d;    /* Warna abu-abu agar tidak dominan */
+            font-size: 16px;   /* Ukuran lebih kecil */
+            font-weight: 400;  /* Font normal (tidak bold) */
+        }
 
         /* --- GRID UTAMA --- */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 360px 1fr; /* Kiri 360px, Kanan sisa layar */
+            grid-template-columns: 360px 1fr;
             gap: 20px;
             height: 100%;
             overflow: hidden;
@@ -31,20 +50,34 @@
             background: white; padding: 25px; border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             display: flex; flex-direction: column;
-            overflow-y: auto; /* Scroll jika konten terlalu panjang */
+            overflow-y: auto;
         }
         
         .form-group label { font-weight: bold; display: block; margin-bottom: 8px; color: #34495e; }
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;
-            box-sizing: border-box; font-size: 16px; margin-bottom: 15px;
+            box-sizing: border-box; font-size: 14px; margin-bottom: 10px;
+            background: #fff;
         }
         button {
             width: 100%; background-color: #3498db; color: white; padding: 12px;
             border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold;
-            transition: 0.3s;
+            transition: 0.3s; margin-top: 10px;
         }
         button:hover { background-color: #2980b9; }
+
+        /* --- INFO BOX --- */
+        .info-box {
+            font-size: 13px;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #f1c40f;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            display: none;
+        }
 
         .stats-container {
             margin-top: 20px; display: flex; gap: 10px;
@@ -61,7 +94,7 @@
 
         /* --- PANEL KANAN --- */
         .panel-right {
-            display: grid; grid-template-rows: 55% 45%; /* Grafik lebih tinggi sedikit */
+            display: grid; grid-template-rows: 55% 45%;
             gap: 20px;
             height: 100%; overflow: hidden;
         }
@@ -77,7 +110,6 @@
         .chart-wrapper { flex-grow: 1; position: relative; width: 100%; }
         .table-wrapper { flex-grow: 1; overflow-y: auto; }
         
-        /* Tabel Style */
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
         th { background-color: #f8f9fa; position: sticky; top: 0; color: #555; z-index: 10; }
@@ -86,7 +118,10 @@
 </head>
 <body>
 
-    <h1>📂 Dashboard Analisis Kompleksitas Algoritma</h1>
+    <div class="header-container">
+        <h1>📂 Folder Analyzer</h1>
+        <h2>Analisis Efisiensi Perhitungan Ukuran Direktori (Folder) pada Struktur Data Hirarkis</h2>
+    </div>
 
     <div class="dashboard-grid">
         <div class="panel-left">
@@ -96,9 +131,25 @@
                     <label>Jumlah Data (N):</label>
                     <input type="number" name="inputN" value="{{.InputN}}" placeholder="Contoh: 10000" required>
                 </div>
+
+                <div class="form-group">
+                    <label>Skenario Struktur Data:</label>
+                    <select id="scenarioSelect" name="scenario" onchange="updateInfo()">
+                        <option value="default" {{if eq .SelectedMode "default"}}selected{{end}}>
+                            📂 Default (Struktur Linear Dalam)
+                        </option>
+                        <option value="random" {{if eq .SelectedMode "random"}}selected{{end}}>
+                            🎲 Random (Probabilitas 30:70)
+                        </option>
+                    </select>
+                </div>
+
+                <div id="infoBox" class="info-box">
+                    </div>
+
                 <button type="submit">🚀 Jalankan Analisis</button>
             </form>
-
+            
             {{if .IsProcessed}}
             <div class="stats-container">
                 <div class="stat-box" style="background: #e8f6f3; border: 1px solid #d4efdf;">
@@ -155,14 +206,34 @@
         </div>
     </div>
 
+    <script>
+        // Info Skenario
+        const scenarioInfo = {
+            'default': "<b>Skenario Worst-Case (Linear Deep):</b><br>Membuat struktur di mana setiap folder hanya memiliki 1 file dan 1 sub-folder di dalamnya secara terus menerus.<br><br><i>Tujuan:</i> Menguji batas memori (Stack Overflow) pada algoritma Rekursif akibat kedalaman tumpukan yang ekstrem.",
+            'random': "<b>Skenario Average-Case (Random Tree):</b><br>Membuat struktur pohon acak dengan probabilitas 70% File dan 30% Folder.<br><br><i>Tujuan:</i> Mensimulasikan kondisi sistem file nyata pada umumnya."
+        };
+
+        function updateInfo() {
+            const select = document.getElementById('scenarioSelect');
+            const infoBox = document.getElementById('infoBox');
+            const val = select.value;
+
+            if (scenarioInfo[val]) {
+                infoBox.style.display = 'block';
+                infoBox.innerHTML = scenarioInfo[val];
+            } else {
+                infoBox.style.display = 'none';
+            }
+        }
+        window.onload = updateInfo;
+    </script>
+
     {{if .IsProcessed}}
     <script>
-        // 1. Ambil Data JSON dari Go
         const labels = JSON.parse('{{.ChartLabels}}');
         const dataRec = JSON.parse('{{.ChartDataRec}}');
         const dataIter = JSON.parse('{{.ChartDataIter}}');
 
-        // 2. Render Grafik Chart.js
         const ctx = document.getElementById('myChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
@@ -172,14 +243,14 @@
                     {
                         label: 'Rekursif',
                         data: dataRec,
-                        borderColor: '#e74c3c', // Merah
+                        borderColor: '#e74c3c', 
                         backgroundColor: 'rgba(231, 76, 60, 0.1)',
                         tension: 0.3, fill: true, pointRadius: 3
                     },
                     {
                         label: 'Iteratif',
                         data: dataIter,
-                        borderColor: '#3498db', // Biru
+                        borderColor: '#3498db', 
                         backgroundColor: 'rgba(52, 152, 219, 0.1)',
                         tension: 0.3, fill: true, pointRadius: 3
                     }
@@ -190,23 +261,16 @@
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
                 scales: {
-                    x: { 
-                        title: { display: true, text: 'Input Size (N)' }, 
-                        grid: { display: false } 
-                    },
+                    x: { title: { display: true, text: 'Input Size (N)' }, grid: { display: false } },
                     y: { 
                         title: { display: true, text: 'Waktu (Microseconds)' },
                         beginAtZero: true,
-                        // Tampilkan desimal di sumbu Y
-                        ticks: { 
-                            callback: function(val) { return val.toFixed(4) + ' µs'; } 
-                        }
+                        ticks: { callback: function(val) { return val.toFixed(4) + ' µs'; } }
                     }
                 },
                 plugins: {
                     tooltip: {
                         callbacks: {
-                            // Tooltip presisi tinggi (6 desimal)
                             label: function(context) {
                                 return context.dataset.label + ': ' + context.raw.toFixed(6) + ' µs';
                             }
@@ -216,7 +280,6 @@
             }
         });
 
-        // 3. Render Tabel Detail
         const tableBody = document.getElementById('tableBody');
         let htmlRows = '';
         
@@ -224,35 +287,15 @@
             const nVal = labels[i];
             const rVal = dataRec[i];
             const iVal = dataIter[i];
-
-            // Format angka 6 desimal agar tidak 0.000
             const rDisplay = rVal.toFixed(6);
             const iDisplay = iVal.toFixed(6);
 
-            // Logika Pemenang
-            let winner = '';
-            let winnerStyle = '';
+            let winner = '', winnerStyle = '';
+            if (rVal < iVal) { winner = '🏆 Rekursif'; winnerStyle = 'color: #e74c3c; font-weight: bold;'; }
+            else if (iVal < rVal) { winner = '🏆 Iteratif'; winnerStyle = 'color: #3498db; font-weight: bold;'; }
+            else { winner = 'Setara'; winnerStyle = 'color: gray; font-style: italic;'; }
 
-            if (rVal < iVal) {
-                winner = 'Rekursif';
-                winnerStyle = 'color: #e74c3c; font-weight: bold;'; // Merah
-            } else if (iVal < rVal) {
-                winner = 'Iteratif';
-                winnerStyle = 'color: #3498db; font-weight: bold;'; // Biru
-            } else {
-                winner = 'Setara';
-                winnerStyle = 'color: gray; font-style: italic;';
-            }
-
-            htmlRows += `
-                <tr>
-                    <td>${i+1}</td>
-                    <td><b>${nVal.toLocaleString()}</b></td>
-                    <td>${rDisplay}</td>
-                    <td>${iDisplay}</td>
-                    <td style="${winnerStyle}">🏆 ${winner}</td>
-                </tr>
-            `;
+            htmlRows += `<tr><td>${i+1}</td><td><b>${nVal.toLocaleString()}</b></td><td>${rDisplay}</td><td>${iDisplay}</td><td style="${winnerStyle}"> ${winner}</td></tr>`;
         }
         tableBody.innerHTML = htmlRows;
     </script>
