@@ -10,15 +10,15 @@ import (
 func GenerateDummyStructure(totalItems int, mode string) (*FileSystemNode, int, int) {
 	rand.Seed(time.Now().UnixNano())
 	root := NewNode("Root", true, 0)
-	
+
 	countFiles := 0
-	countFolders := 1 // Folder Root sudah dihitung 
+	countFolders := 1 // Folder Root sudah dihitung
 
 	if mode == "random" {
 		// SKENARIO RANDOM (30% Folder : 70% File)
 		// Buat slice bantu untuk memilih parent secara acak
 		availableFolders := []*FileSystemNode{root}
-		
+
 		for i := 0; i < totalItems; i++ {
 			parentIdx := rand.Intn(len(availableFolders))
 			parent := availableFolders[parentIdx]
@@ -31,7 +31,7 @@ func GenerateDummyStructure(totalItems int, mode string) (*FileSystemNode, int, 
 			} else { // 30% Folder
 				folder := NewNode("Folder_"+strconv.Itoa(i), true, 0)
 				parent.AddChild(folder)
-				
+
 				availableFolders = append(availableFolders, folder)
 				countFolders++
 			}
@@ -40,54 +40,54 @@ func GenerateDummyStructure(totalItems int, mode string) (*FileSystemNode, int, 
 	} else {
 		// SKENARIO DEFAULT (1 Folder = 1 File, Deep Structure)
 		// Ini akan membuat Linked List vertikal yang sangat dalam.
-		
+
 		current := root
-    i := 0
-    for i < totalItems {
-        // 1. Buat Folder Baru
-        folderName := "Folder_" + strconv.Itoa(countFolders)
-        newFolder := NewNode(folderName, true, 0)
-        current.AddChild(newFolder)
-        countFolders++
-        i++ // Node bertambah
+		i := 0
+		for i < totalItems {
+			// 1. Buat Folder Baru
+			folderName := "Folder_" + strconv.Itoa(countFolders)
+			newFolder := NewNode(folderName, true, 0)
+			current.AddChild(newFolder)
+			countFolders++
+			i++ // Node bertambah
 
-        // Cek jika kuota N masih ada untuk File
-        if i < totalItems {
-            // 2. Buat 1 File di dalamnya
-            size := int64(rand.Intn(100000) + 1024)
-            file := NewNode("File_"+strconv.Itoa(countFiles), false, size)
-            newFolder.AddChild(file)
-            countFiles++
-            i++ // Node bertambah
-        }
+			// Cek jika kuota N masih ada untuk File
+			if i < totalItems {
+				// 2. Buat 1 File di dalamnya
+				size := int64(rand.Intn(100000) + 1024)
+				file := NewNode("File_"+strconv.Itoa(countFiles), false, size)
+				newFolder.AddChild(file)
+				countFiles++
+				i++ // Node bertambah
+			}
 
-        // 3. Masuk ke dalam folder baru
-        current = newFolder
+			// 3. Masuk ke dalam folder baru
+			current = newFolder
 		}
 	}
 
 	return root, countFiles, countFolders
 }
 
-// --- HITUNG REKURSIF (Versi Multi Linked List) ---
+// HITUNG REKURSIF (Versi Multi Linked List)
 func HitungRekursif(node *FileSystemNode) int64 {
 	if !node.IsFolder {
 		return node.Size
 	}
 
 	var total int64 = 0
-	
+
 	// Loop menelusuri Sibling (Kanan)
 	child := node.FirstChild
 	for child != nil {
 		total += HitungRekursif(child)
 		child = child.NextSibling
 	}
-	
+
 	return total
 }
 
-// --- HITUNG ITERATIF (Versi Multi Linked List) ---
+// HITUNG ITERATIF (Versi Multi Linked List)
 func HitungIteratif(root *FileSystemNode) int64 {
 	if !root.IsFolder {
 		return root.Size

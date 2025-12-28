@@ -1,13 +1,13 @@
 package main
 
 import (
+	"FolderAnalyzer/backend"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
 	"time"
-	"FolderAnalyzer/backend"
 )
 
 type PageData struct {
@@ -15,11 +15,11 @@ type PageData struct {
 	SelectedMode string // Menampung pilihan user (default/random)
 	Result       template.HTML
 	IsProcessed  bool
-	
+
 	ChartLabels   string
 	ChartDataRec  string
 	ChartDataIter string
-	
+
 	TotalFiles   int
 	TotalFolders int
 }
@@ -57,16 +57,23 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-// Update fungsi analisis menerima parameter 'mode'
 func analyzeWithCheckpoints(n int, mode string, data *PageData) {
-	// --- LABELS (Sama seperti sebelumnya) ---
 	var labels []int
 	initials := []int{1, 2, 4}
-	for _, val := range initials { if val < n { labels = append(labels, val) } }
+	for _, val := range initials {
+		if val < n {
+			labels = append(labels, val)
+		}
+	}
 	current := 10
-	for current < n { labels = append(labels, current); current *= 2 }
-	if len(labels) == 0 || labels[len(labels)-1] != n { labels = append(labels, n) }
-	
+	for current < n {
+		labels = append(labels, current)
+		current *= 2
+	}
+	if len(labels) == 0 || labels[len(labels)-1] != n {
+		labels = append(labels, n)
+	}
+
 	var timesRec, timesIter []float64
 	var finalSizeR, finalSizeI int64
 	var finalTimeR, finalTimeI float64
@@ -90,8 +97,10 @@ func analyzeWithCheckpoints(n int, mode string, data *PageData) {
 		timesIter = append(timesIter, durIter)
 
 		if i == len(labels)-1 {
-			finalSizeR = sizeR; finalSizeI = sizeI
-			finalTimeR = durRec; finalTimeI = durIter
+			finalSizeR = sizeR
+			finalSizeI = sizeI
+			finalTimeR = durRec
+			finalTimeI = durIter
 			data.TotalFiles = currentFiles
 			data.TotalFolders = currentFolders
 		}
@@ -107,13 +116,10 @@ func analyzeWithCheckpoints(n int, mode string, data *PageData) {
 
 	// --- FORMAT OUTPUT ---
 	res := fmt.Sprintf("<b>Hasil Akhir (N=%d, Mode=%s):</b><br><hr>", n, mode)
-	
-	// PERBAIKAN: Tambahkan parameter finalSizeR dan finalSizeI di sini
-	// Perhatikan penambahan "(Size: %d bytes)" di dalam string format
-	
+
 	res += fmt.Sprintf("<b>REKURSIF:</b> %.4f µs (Size: %d bytes)<br>", finalTimeR, finalSizeR)
 	res += fmt.Sprintf("<b>ITERATIF:</b> %.4f µs (Size: %d bytes)<br><hr>", finalTimeI, finalSizeI)
-	
+
 	if finalTimeI < finalTimeR {
 		res += "<b style='color:green'>Iteratif Lebih Cepat.</b>"
 	} else if finalTimeI > finalTimeR {
